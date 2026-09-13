@@ -202,7 +202,6 @@ namespace AVG
 			if (info) //raw_value == 256
 			{
 				auto value = info->GetExtraValue(target, ExtraValueInput::All);
-				logger::debug("hit get {}, VALUE: {}", raw_value, value);
 				return value;
 
 			}
@@ -476,7 +475,6 @@ namespace AVG
 			if (info) {  //raw_value == 256) {
 				//auto value = Psuedo::GetExtraValue(a_this, "HitsTaken", a2);
 				auto value = info->GetExtraValue(a_this, a2);
-				logger::debug("hit mdfr {}, modifier {}, val {}", raw_value, a2, value);
 
 				return value;
 			} 
