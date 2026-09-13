@@ -82,6 +82,22 @@ namespace AVG
 			float _evMods[RE::ACTOR_VALUE_MODIFIER::kTotal]{0.f, 0.f, 0.f};
 		};
 
+		/// <summary>
+		/// Tells if the ExtraValueData is relevant.
+		/// </summary>
+		/// <param name="irr_num">The number that is considered to be irrelevant</param>
+		/// <returns></returns>
+		bool IsRelevant(float irr_num = NAN)
+		{
+			constexpr float empty_mods[RE::ACTOR_VALUE_MODIFIER::kTotal]{ 0.f, 0.f, 0.f };
+
+			if (std::memcmp(_evMods, empty_mods, RE::ACTOR_VALUE_MODIFIER::kTotal) != 0) {
+				return true;
+			}
+
+
+			return !std::isnan(_base) && _base != irr_num;
+		}
 
 		duo<float> GetValue(ExtraValueInput modifiers = ExtraValueInput::All)
 		{
@@ -392,6 +408,26 @@ namespace AVG
 		{
 			storage.Serialize(buffer, result);
 		}
+
+		virtual bool IsRelevant()
+		{
+			for (int64_t i = 0; i < _valueData.size(); i++) {
+				ExtraValueInfo* info = ExtraValueInfo::GetValueInfoByData((DataID)i);
+				assert(info);
+				if (_valueData.at(i).IsRelevant(info->GetIrrelevantValue()) == true) {
+					return true;
+				}	
+			}
+
+			return false;
+		}
+
+
+		static bool IsSerializeRelevant(ExtraValueStorage& storage)
+		{
+			return storage.IsRelevant();
+		}
+
 
 
 		struct SerializeClass
@@ -903,6 +939,11 @@ namespace AVG
 			__super::Serialize(buffer, result);
 			
 			//Here is where I'll do the skill stuff.
+		}
+
+		virtual bool IsRelevant() override
+		{
+			return true;
 		}
 
 

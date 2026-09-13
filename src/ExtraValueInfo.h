@@ -556,8 +556,10 @@ namespace AVG
 
 		static inline std::vector<ExtraValueInfo*> _extraValueList;
 
+		inline static auto test = TOME::SerialManager::CreateSerializer(1);
+
 		inline static TOME::SerialCallback& _serialCallback =
-			TOME::SerialManager::CreateSerializer<TOME::SerialCallback, PrimaryRecordType::ExtraValueInfo>([](TOME::SerialBuffer& buffer, bool& success)
+			TOME::SerialManager::CreateSerializer(PrimaryRecordType::ExtraValueInfo, [](TOME::SerialBuffer& buffer, bool& success)
 				{
 					bool is_saving = buffer.IsSaving();
 
@@ -713,11 +715,14 @@ namespace AVG
 			// and skillful adaptive ones be later, allowing them to be bunched and iterated on.
 			// To help with this, I might have a map of vectors that get iterated on and collapsed together.
 
-			std::vector<std::pair<DataID, SkillData>> result(_skillValueList.size());
+			std::vector<std::pair<DataID, SkillData>> result;
+			result.reserve(_skillValueList.size());
+			//Change this, this is a mountain of pointlessness.
 
-			auto it = _skillValueList.begin();
-
-			std::transform(result.begin(), result.end(), result.begin(), [&](auto pair) { auto i = it++; return std::make_pair(*i, SkillData()); });
+			for (DataID id : _skillValueList)
+			{
+				result.push_back(std::make_pair(id, SkillData{}));
+			}
 
 			return result;
 		}
@@ -898,6 +903,8 @@ namespace AVG
 
 		virtual InputFlags	GetInputFlags() = 0;
 		virtual bool		IsImplicit() noexcept { return false; }
+		virtual bool		IsConstant() noexcept { return false; }
+		virtual float		GetIrrelevantValue() noexcept { return NAN; }
 
 		bool AllowsModifier() { return GetInputFlags().set & (ExtraValueInput::Temporary | ExtraValueInput::Permanent); }
 		bool AllowsDamage() { return GetInputFlags().set & ExtraValueInput::Damage; }
@@ -1185,6 +1192,14 @@ namespace AVG
 		RecoverInfo* GetRecoverInfo() override { return adapt()->GetRecoverInfo(); }
 
 		bool IsImplicit() noexcept override { return adapt()->IsImplicit(); }
+
+
+		float GetIrrelevantValue() noexcept override
+		{
+			auto self = adapt();
+
+			return self->AllowSoftDefault() ? GetExtraValueDefault(RE::PlayerCharacter::GetSingleton()) : NAN;
+		}
 
 		float GetExtraValueDefault(RE::Actor* target) override { return adapt()->GetExtraValueDefault(target); }
 
@@ -1605,6 +1620,16 @@ namespace AVG
 		
 		InputFlags GetInputFlags() override { return InputFlags{ GetFlags(), SetFlags() }; }
 
+
+
+		bool IsImplicit() noexcept override { return adapt()->IsImplicit(); }
+
+		float GetIrrelevantValue() noexcept override
+		{
+			auto self = adapt();
+
+			return self->AllowSoftDefault() ? GetExtraValueDefault(RE::PlayerCharacter::GetSingleton()) : NAN;
+		}
 
 
 		float GetExtraValue(RE::Actor* target, ExtraValueInput value_types = ExtraValueInput::All) override

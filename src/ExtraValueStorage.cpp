@@ -40,7 +40,7 @@ namespace AVG
 
 	//This now saves a copy and loads the original. I hope this makes it some what faster. If this dead locks on loading I'm going to die.
 	//StorageMap& ExtraValueStorage::_valueTable = TOME::SerialManager::CreateSerializer<ExtraValueStorage::SerialMapClass, PrimaryRecordType::ExtraValueStorage>();
-	StorageMap& ExtraValueStorage::_valueTable = TOME::SerialManager::CreateSerializer<SaveCopyMap, PrimaryRecordType::ExtraValueStorage>();
+	StorageMap& ExtraValueStorage::_valueTable = TOME::SerialManager::CreateSerializer<SaveCopyMap>(PrimaryRecordType::ExtraValueStorage);
 
 
 	ExtraValueStorage::ExtraValueStorage(RE::Actor* actor, bool create_default)
@@ -203,5 +203,5 @@ namespace AVG
 
 
 
-	PlayerStorage& PlayerStorage::_singleton = TOME::SerialManager::CreateSerializer<PlayerStorage, PrimaryRecordType::PlayerStorage>();
+	PlayerStorage& PlayerStorage::_singleton = TOME::SerialManager::CreateSerializer(PrimaryRecordType::PlayerStorage);
 }
